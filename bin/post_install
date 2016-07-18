@@ -1,0 +1,42 @@
+#!/bin/bash -eu
+
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+
+# Generate PostgreSQL username and set $PGUSER
+
+if [[ -z ${OPENSHIFT_POSTGRESQL_USERNAME-} ]]; then
+    OPENSHIFT_POSTGRESQL_USERNAME=$(generate_username | tr '[:upper:]' '[:lower:]')
+fi
+
+# Generate a password, if not set
+
+if [[ -z ${OPENSHIFT_POSTGRESQL_PASSWORD-} ]]; then
+    OPENSHIFT_POSTGRESQL_PASSWORD=$(generate_password)
+fi
+
+# Create user, database and set password
+
+echo 'Creating PostgreSQL user'
+
+createuser --username=$USER --superuser --createdb --createrole $OPENSHIFT_POSTGRESQL_USERNAME
+createdb --username=$USER --owner=$OPENSHIFT_POSTGRESQL_USERNAME $OPENSHIFT_APP_NAME
+PGUSER=$OPENSHIFT_POSTGRESQL_USERNAME pg_pwd $OPENSHIFT_POSTGRESQL_PASSWORD
+
+# Set environment variables
+
+set_env_var 'PGUSER' $OPENSHIFT_POSTGRESQL_USERNAME $OPENSHIFT_POSTGRESQL_DIR/env
+set_env_var 'OPENSHIFT_POSTGRESQL_USERNAME' $OPENSHIFT_POSTGRESQL_USERNAME $OPENSHIFT_POSTGRESQL_DIR/env
+
+# Show success message to the user
+
+client_result 'PostgreSQL '${OPENSHIFT_POSTGRESQL_VERSION}' successfully added!'
+client_result ''
+client_result 'PLEASE WRITE DOWN THE PASSWORD, THIS CARTRIDGE DOES NOT STORE IT'
+client_result '(CHECK README.MD FILE FOR INFO ABOUT HOW TO RESET THE PASSWORD)'
+client_result ''
+client_result '- Database: '$OPENSHIFT_APP_NAME
+client_result '- Username: '$OPENSHIFT_POSTGRESQL_USERNAME
+client_result '- Password: '$OPENSHIFT_POSTGRESQL_PASSWORD
+
+cart_props 'database='$OPENSHIFT_APP_NAME
+cart_props 'username='$OPENSHIFT_POSTGRESQL_USERNAME

@@ -1,0 +1,10 @@
+#!/bin/bash -eu
+
+if [[ -z ${1-} ]]; then
+    echo 'Missing password; usage: pg_pwd "new password"'
+    exit 1
+fi
+
+echo "ALTER USER ${PGUSER} PASSWORD '${1}';" | psql --username=$USER --quiet
+
+echo 'Success!'

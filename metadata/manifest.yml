@@ -1,0 +1,34 @@
+---
+Name: postgresql
+Cartridge-Short-Name: POSTGRESQL
+Display-Name: PostgreSQL 9.5
+Version: '9.5.3'
+Cartridge-Version: 0.0.1
+Cartridge-Vendor: sbtoledo
+Website: https://github.com/sbtoledo/openshift-cartridge-postgresql-9.5
+Source-Url: https://github.com/sbtoledo/openshift-cartridge-postgresql-9.5.git
+Categories:
+    - service
+    - database
+    - embedded
+Cart-Data:
+    - Key: database
+      Type: cart_data
+    - Key: username
+      Type: cart_data
+Provides:
+    - postgresql-9.5
+    - postgresql
+Publishes:
+    publish-db-connection-info:
+        Type: ENV:NET_TCP:db:connection-info
+Scaling:
+    Min: 1
+    Max: 1
+Endpoints:
+    - Private-IP-Name:   HOST
+      Private-Port-Name: PORT
+      Private-Port:      5432
+      Public-Port-Name:  PROXY_PORT
+      Protocols:
+          - postgresql

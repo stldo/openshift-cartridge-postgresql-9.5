@@ -1,0 +1,8 @@
+---
+locked_files:
+    - bin/*
+    - env/*
+    - hooks/*
+setup_rewritten:
+    - conf/*
+    - env/*

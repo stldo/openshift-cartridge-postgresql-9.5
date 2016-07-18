@@ -1,0 +1,23 @@
+#!/bin/bash -eu
+
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+
+cd $OPENSHIFT_POSTGRESQL_DIR/usr
+
+# Install PostgreSQL
+
+echo 'Installing PostgreSQL'
+
+tar xjf postgresql-9.5.3-linux-x64.tar.bz2
+
+if [ true = "${OPENSHIFT_POSTGRESQL_CONTRIB-}" ]; then
+    tar xjf postgresql-9.5.3-contrib-linux-x64.tar.bz2
+fi
+
+rm -f postgresql-9.5.3-linux-x64.tar.bz2
+rm -f postgresql-9.5.3-contrib-linux-x64.tar.bz2
+
+# Set environment variables
+
+set_env_var 'OPENSHIFT_POSTGRESQL_SOCKET' $PGHOST $OPENSHIFT_POSTGRESQL_DIR/env
+set_env_var 'OPENSHIFT_POSTGRESQL_VERSION' '9.5.3' $OPENSHIFT_POSTGRESQL_DIR/env

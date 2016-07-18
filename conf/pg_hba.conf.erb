@@ -1,0 +1,11 @@
+# Allow all users to connect over the socket
+
+# TYPE  DATABASE        USER                                    METHOD
+local   all             <%=    ENV['USER']    %>                peer
+local   all             all                                     md5
+
+# Allow all users to connect over the network with valid credentials
+
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+host    all             all             0.0.0.0/0               md5
+host    all             all             ::/0                    md5

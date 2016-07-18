@@ -1,0 +1,188 @@
+#!/bin/bash -eu
+
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+
+function is_running {
+    local postmaster_pid=$PGDATA/postmaster.pid
+
+    if [[ ! -f $postmaster_pid ]]; then
+        return 1
+    fi
+
+    local pid=$(cat $postmaster_pid 2> /dev/null)
+
+    if [[ -z $pid ]] || ! process_running 'postgres' $pid; then
+        rm -f $postmaster_pid
+        return 1
+    fi
+
+    return 0
+}
+
+function kill_process {
+    kill -$1 $2 2> /dev/null
+
+    for timer in {1..60}; do
+        if ! kill -0 $2; then
+            return 0
+        fi
+        sleep 0.5
+    done
+
+    return 1
+}
+
+function logrotate {
+    local logrotate_pid=$OPENSHIFT_POSTGRESQL_DIR/usr/var/lib/logrotate.pid
+
+    if [[ 'stop' = "${1-}" ]]; then
+        local pid=$(cat $logrotate_pid 2> /dev/null)
+
+        if [[ ! -z $pid ]]; then
+            kill $pid
+            rm -f $logrotate_pid
+        fi
+
+        return 0
+    elif [[ -f $logrotate_pid ]]; then
+        logrotate stop
+        rm -f $logrotate_pid
+    fi
+
+    while /bin/true; do
+        /usr/sbin/logrotate --state $OPENSHIFT_POSTGRESQL_DIR/usr/var/lib/logrotate.status $OPENSHIFT_POSTGRESQL_DIR/usr/etc/logrotate.conf
+
+        local midnight=$(date --date='tomorrow 00:00:00' "+%s")
+        local now=$(date "+%s")
+
+        sleep $((midnight - now))
+    done &
+
+    echo $! > $logrotate_pid
+
+    return 0
+}
+
+function process_running {
+    for process_id in $(pgrep -f $1); do
+        if [[ "$2" = "$process_id" ]]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+function reload {
+    local stopped=false
+
+    if is_running; then
+        if ! stop; then
+            client_error 'PostgreSQL failed to stop for reload'
+            return 1
+        fi
+        stopped=true
+    fi
+
+    erb $OPENSHIFT_POSTGRESQL_DIR/conf/pg_hba.conf.erb > $PGDATA/pg_hba.conf
+    erb $OPENSHIFT_POSTGRESQL_DIR/conf/postgresql.conf.erb > $PGDATA/postgresql.conf
+
+    if $stopped; then
+        if ! start; then
+            client_error 'PostgreSQL failed to start after reload'
+            return 1
+        fi
+    fi
+
+    client_result 'PostgreSQL reloaded'
+    return 0
+}
+
+function restart {
+    if ( is_running && ! stop ) || ! start; then
+        client_error 'PostgreSQL failed to restart'
+        return 1
+    fi
+
+    client_result 'PostgreSQL restarted'
+    return 0
+}
+
+function start {
+    if is_running; then
+        client_result 'PostgreSQL is already running'
+        return 0
+    elif pg_ctl start -w -l $OPENSHIFT_LOG_DIR/postgresql.log; then
+        logrotate
+
+        client_result 'PostgreSQL started'
+        return 0
+    fi
+
+    client_error 'PostgreSQL failed to start'
+    return 1
+}
+
+function status {
+    if is_running; then
+        client_result 'PostgreSQL is running'
+    else
+        client_result 'PostgreSQL is not running'
+    fi
+
+    return 0
+}
+
+function stop {
+    if ! is_running; then
+        client_result 'PostgreSQL is already stopped'
+        return 0
+    else
+        local pid=$(cat $PGDATA/postmaster.pid 2> /dev/null)
+        if pg_ctl stop -m smart || pg_ctl stop -m fast || pg_ctl stop -m immediate || kill_process KILL $pid; then
+            logrotate stop
+
+            client_result 'PostgreSQL stopped'
+            return 0
+        fi
+    fi
+
+    client_error 'PostgreSQL failed to stop'
+    return 1
+}
+
+function tidy {
+    remove -rf $OPENSHIFT_LOG_DIR/postgresql*
+
+    local started=false
+
+    if ! is_running; then
+        if ! start; then
+            client_error 'PostgreSQL failed to start for vacuuming'
+            return 1
+        fi
+        started=true
+    fi
+
+    psql --username=$USER -c 'VACUUM ANALYZE;'
+
+    if $started; then
+        if ! stop; then
+            client_error 'PostgreSQL failed to stop after vacuuming'
+            return 1
+        fi
+    fi
+
+    client_result 'PostgreSQL cleaned'
+    return 0
+}
+
+case $1 in
+    reload) reload;;
+    restart) restart;;
+    start) start;;
+    status) status;;
+    stop) stop;;
+    tidy) tidy;;
+    *) exit 0;;
+esac

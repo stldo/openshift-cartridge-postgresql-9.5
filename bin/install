@@ -1,0 +1,21 @@
+#!/bin/bash -eu
+
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+
+# Configure PostgreSQL
+
+echo 'Configuring PostgreSQL'
+
+mkdir -p $PGDATA $PGHOST
+chmod 0700 $PGDATA
+chmod 0700 $PGHOST
+
+pg_ctl initdb
+
+erb $OPENSHIFT_POSTGRESQL_DIR/conf/pg_hba.conf.erb > $PGDATA/pg_hba.conf
+erb $OPENSHIFT_POSTGRESQL_DIR/conf/postgresql.conf.erb > $PGDATA/postgresql.conf
+
+# Configure logrotate
+
+mkdir -p $OPENSHIFT_POSTGRESQL_DIR/usr/etc $OPENSHIFT_POSTGRESQL_DIR/usr/var/lib
+erb $OPENSHIFT_POSTGRESQL_DIR/conf/logrotate.conf.erb > $OPENSHIFT_POSTGRESQL_DIR/usr/etc/logrotate.conf
