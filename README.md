@@ -49,4 +49,4 @@ You can reset the password of the default PostgreSQL user through SSH, issuing t
 
 ## License
 
-MIT
+The MIT License (MIT), © 2016 Saulo Toledo
