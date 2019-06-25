@@ -1,31 +1,31 @@
 # OpenShift PostgreSQL 9.5 Cartridge
 
-A cartridge for OpenShift containing PostgreSQL 9.5 with autovacuum activated. This package adds the option `track_address` to `postgresql.conf` ([patch gist](https://gist.github.com/sbtoledo/294c6f0c4fea31c153cd1d4413656554)), so an address for the statistics collector can be set and autovacuum enabled—circumventing the fact that OpenShift disables access to `localhost`. Its default configuration aims for better performance on small gears. To get the most out of larger instances, it's recommended to set [postgresql.conf](#configure) accordingly.
+A cartridge for OpenShift containing PostgreSQL 9.5 with autovacuum activated. This package adds the option `track_address` to `postgresql.conf` ([patch gist](https://gist.github.com/stldo/294c6f0c4fea31c153cd1d4413656554)), so an address for the statistics collector can be set and autovacuum enabled—circumventing the fact that OpenShift disables access to `localhost`. Its default configuration aims for better performance on small gears. To get the most out of larger instances, it's recommended to set [postgresql.conf](#configure) accordingly.
 
 ## Install
 
 ### Add to an existing application
 
 ```bash
-rhc cartridge-add -a {myApplicationName} https://raw.githubusercontent.com/sbtoledo/openshift-cartridge-postgresql-9.5/master/metadata/manifest.yml
+rhc cartridge-add -a {myApplicationName} https://raw.githubusercontent.com/stldo/openshift-cartridge-postgresql-9.5/master/metadata/manifest.yml
 ```
 
 ### Set default username
 
 ```bash
-rhc cartridge-add -a {myApplicationName} --env OPENSHIFT_POSTGRESQL_USERNAME='{myUserName}' https://raw.githubusercontent.com/sbtoledo/openshift-cartridge-postgresql-9.5/master/metadata/manifest.yml
+rhc cartridge-add -a {myApplicationName} --env OPENSHIFT_POSTGRESQL_USERNAME='{myUserName}' https://raw.githubusercontent.com/stldo/openshift-cartridge-postgresql-9.5/master/metadata/manifest.yml
 ```
 
 ### Set default password
 
 ```bash
-rhc cartridge-add -a {myApplicationName} --env OPENSHIFT_POSTGRESQL_PASSWORD='{myPassword}' https://raw.githubusercontent.com/sbtoledo/openshift-cartridge-postgresql-9.5/master/metadata/manifest.yml
+rhc cartridge-add -a {myApplicationName} --env OPENSHIFT_POSTGRESQL_PASSWORD='{myPassword}' https://raw.githubusercontent.com/stldo/openshift-cartridge-postgresql-9.5/master/metadata/manifest.yml
 ```
 
 ### Add with contrib modules
 
 ```bash
-rhc cartridge-add -a {myApplicationName} --env OPENSHIFT_POSTGRESQL_CONTRIB=true https://raw.githubusercontent.com/sbtoledo/openshift-cartridge-postgresql-9.5/master/metadata/manifest.yml
+rhc cartridge-add -a {myApplicationName} --env OPENSHIFT_POSTGRESQL_CONTRIB=true https://raw.githubusercontent.com/stldo/openshift-cartridge-postgresql-9.5/master/metadata/manifest.yml
 ```
 
 ## Use
@@ -49,4 +49,4 @@ You can reset the password of the default PostgreSQL user through SSH, issuing t
 
 ## License
 
-The MIT License (MIT), © 2016 Saulo Toledo
+[The MIT License](./LICENSE)

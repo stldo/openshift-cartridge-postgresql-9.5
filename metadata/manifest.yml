@@ -4,9 +4,9 @@ Cartridge-Short-Name: POSTGRESQL
 Display-Name: PostgreSQL 9.5
 Version: '9.5.3'
 Cartridge-Version: 0.0.1
-Cartridge-Vendor: sbtoledo
-Website: https://github.com/sbtoledo/openshift-cartridge-postgresql-9.5
-Source-Url: https://github.com/sbtoledo/openshift-cartridge-postgresql-9.5.git
+Cartridge-Vendor: stldo
+Website: https://github.com/stldo/openshift-cartridge-postgresql-9.5
+Source-Url: https://github.com/stldo/openshift-cartridge-postgresql-9.5.git
 Categories:
     - service
     - database
